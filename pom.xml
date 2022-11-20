@@ -11,6 +11,7 @@
     <modules>
         <module>lrpc-common</module>
         <module>lrpc-core</module>
+        <module>lrpc-api-test</module>
     </modules>
 
     <properties>

@@ -1,4 +1,4 @@
-package com.l1nker4.constants;
+package com.l1nker4.lrpc.constants;
 
 /**
  * @author ：L1nker4
