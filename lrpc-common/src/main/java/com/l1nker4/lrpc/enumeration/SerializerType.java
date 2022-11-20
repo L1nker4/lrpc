@@ -22,5 +22,13 @@ public enum SerializerType {
 
     private final int code;
 
+    public static SerializerType getByCode(int code){
+        for (SerializerType value : values()) {
+            if (value.getCode() == code){
+                return value;
+            }
+        }
+        return JSON;
+    }
 
 }

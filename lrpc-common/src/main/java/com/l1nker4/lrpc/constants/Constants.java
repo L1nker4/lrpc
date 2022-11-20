@@ -6,4 +6,9 @@ package com.l1nker4.lrpc.constants;
  * @description： 常量类
  */
 public class Constants {
+
+    public static final byte[] MAGIC_NUMBER = {1, 2, 3, 4};
+    public static final byte[] RETAIN_DATA = {0, 0, 0};
+
+    public static final byte VERSION = 1;
 }

@@ -32,12 +32,10 @@ public interface CommonSerializer {
      */
     static CommonSerializer getByType(SerializerType type){
         switch (type){
-            case JSON:
-                return new JsonSerializer();
             case PROTOBUF:
                 return new ProtobufSerializer();
             default:
-                return null;
+                return new JsonSerializer();
         }
     }
 }
