@@ -1,6 +1,6 @@
 package com.l1nker4.lrpc.protocol;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 序号生成器
@@ -9,9 +9,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class SequenceIdGenerator {
 
-    private static final AtomicInteger ID = new AtomicInteger();
+    private static final AtomicLong ID = new AtomicLong();
 
-    public static int nextId() {
+    public static Long nextId() {
         return ID.incrementAndGet();
     }
 }

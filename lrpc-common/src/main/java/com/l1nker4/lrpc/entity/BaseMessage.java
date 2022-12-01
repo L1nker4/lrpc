@@ -3,6 +3,7 @@ package com.l1nker4.lrpc.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,21 +16,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@ToString(callSuper = true)
 public class BaseMessage {
 
     /**
      * 请求id
      */
-    private String requestId;
+    private Long requestId;
 
 
-    private static final AtomicInteger count = new AtomicInteger(0);
+    private static final AtomicInteger COUNT = new AtomicInteger(0);
 
     private static final Map<Integer, Class<? extends BaseMessage>> MAP = new HashMap<>();
 
     static {
-        MAP.put(count.getAndIncrement(), RpcRequest.class);
-        MAP.put(count.getAndIncrement(), RpcResponse.class);
+        MAP.put(COUNT.getAndIncrement(), RpcRequest.class);
+        MAP.put(COUNT.getAndIncrement(), RpcResponse.class);
 
     }
 

@@ -32,7 +32,7 @@ public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, BaseMes
         out.writeByte(serializerType.ordinal());
 
         //package type
-        out.writeBytes(new byte[]{1,2,3,4});
+        out.writeInt(0);
         byte[] data = CommonSerializer.getByType(serializerType).serialize(msg);
         out.writeInt(data.length);
         out.writeBytes(Constants.RETAIN_DATA);
@@ -47,14 +47,16 @@ public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, BaseMes
         byte serializerType = in.readByte();
         int packageType = in.readInt();
         int length = in.readInt();
-        byte[] bytes = new byte[length];
+        in.readByte();
+        in.readByte();
+        byte[] data = new byte[length];
 
-        in.readBytes(bytes, 0, length);
+        in.readBytes(data, 0, length);
 
-        CommonSerializer serializer = CommonSerializer.getByType(SerializerType.getByCode((int) serializerType));
+        CommonSerializer serializer = CommonSerializer.getByType(SerializerType.getByCode(serializerType));
         Class<? extends BaseMessage> messageClass = BaseMessage.getMessageClass(packageType);
-        BaseMessage baseMessage = serializer.deserialize(messageClass, bytes);
-        out.add(messageClass);
+        BaseMessage baseMessage = serializer.deserialize(messageClass, data);
+        out.add(baseMessage);
     }
 
 }

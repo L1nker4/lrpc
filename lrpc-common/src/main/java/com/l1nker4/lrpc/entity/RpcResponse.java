@@ -2,8 +2,10 @@ package com.l1nker4.lrpc.entity;
 
 import com.l1nker4.lrpc.enumeration.ResponseCode;
 import lombok.*;
+import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.util.Calendar;
 
 /**
  * RPC响应类
@@ -16,6 +18,8 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Accessors(chain = true)
+@ToString(callSuper = true)
 public class RpcResponse<T> extends BaseMessage implements Serializable {
 
     private ResponseCode code;
