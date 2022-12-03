@@ -33,7 +33,7 @@ public class RpcClient {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
                     ch.pipeline().addLast(new ProtocolFrameDecoder());
-                    ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
+//                    ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
                     ch.pipeline().addLast(new MessageCodecSharable());
                     ch.pipeline().addLast(new RpcResponseMessageHandler());
                 }
@@ -41,7 +41,7 @@ public class RpcClient {
             Channel channel = bootstrap.connect("localhost", 8080).sync().channel();
 
             RpcRequest rpcRequest = new RpcRequest("test", "test",
-                    new Object[]{1, 2}, new Class[]{Integer.class});
+                    new Object[]{1, 2}, null);
             rpcRequest.setRequestId(SequenceIdGenerator.nextId());
             ChannelFuture future = channel.writeAndFlush(rpcRequest).addListener(promise -> {
                 if (!promise.isSuccess()) {

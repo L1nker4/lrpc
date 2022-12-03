@@ -23,6 +23,7 @@ public class RpcServer {
 
     /**
      * 启动RPC Server的方法
+     *
      * @param port 绑定端口
      */
     public void start(int port) {
@@ -36,7 +37,7 @@ public class RpcServer {
                 @Override
                 protected void initChannel(SocketChannel ch) {
                     ch.pipeline().addLast(new ProtocolFrameDecoder());
-                    ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
+//                    ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
                     ch.pipeline().addLast(new MessageCodecSharable());
                     ch.pipeline().addLast(new RpcRequestMessageHandler());
                 }

@@ -18,7 +18,7 @@ public class ProtocolFrameDecoder extends LengthFieldBasedFrameDecoder {
      */
     public ProtocolFrameDecoder() {
         this(1024, 10,
-                4, 3, 0);
+                4, 2, 0);
     }
 
     public ProtocolFrameDecoder(int maxFrameLength, int lengthFieldOffset, int lengthFieldLength, int lengthAdjustment, int initialBytesToStrip) {
