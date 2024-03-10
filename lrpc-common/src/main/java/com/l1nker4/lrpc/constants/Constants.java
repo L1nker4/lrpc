@@ -7,6 +7,9 @@ package com.l1nker4.lrpc.constants;
  */
 public class Constants {
 
+    /**
+     * request magic number
+     */
     public static final byte[] MAGIC_NUMBER = {1, 2, 3, 4};
     public static final byte[] RETAIN_DATA = {0, 0};
 

@@ -35,7 +35,7 @@ public class BaseMessage {
 
     }
 
-    public static Class<? extends BaseMessage> getMessageClass(int messageType){
+    public static Class<? extends BaseMessage> getMessageClass(int messageType) {
         return MAP.get(messageType);
     }
 

@@ -30,6 +30,7 @@ public abstract class Config {
     public static SerializerType getSerializerType() {
         String value = properties.getProperty("serializer.algorithm");
         if (value == null) {
+            //默认配置为JSON方式
             return SerializerType.JSON;
         } else {
             return SerializerType.valueOf(value);

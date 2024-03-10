@@ -10,7 +10,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.concurrent.Promise;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,13 +19,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @ChannelHandler.Sharable
-public class RpcRequestMessageHandler extends SimpleChannelInboundHandler<RpcRequest> {
+public class RpcServerRequestMessageHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
     public static final Map<String, Promise<Object>> PROMISES = new ConcurrentHashMap<>();
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcRequest rpcRequest) throws Exception {
-        log.debug("rpcRequest: {}", rpcRequest);
+        log.info("rpcRequest: {}", rpcRequest);
         RpcResponse<String> response = getResponseData(rpcRequest);
         channelHandlerContext.writeAndFlush(response);
     }

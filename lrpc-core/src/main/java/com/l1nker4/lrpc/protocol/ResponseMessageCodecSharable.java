@@ -21,7 +21,7 @@ import java.util.List;
  */
 @Slf4j
 @ChannelHandler.Sharable
-public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, BaseMessage> {
+public class ResponseMessageCodecSharable extends MessageToMessageCodec<ByteBuf, BaseMessage> {
 
     @Override
     public void encode(ChannelHandlerContext ctx, BaseMessage msg, List<Object> outList) throws Exception {

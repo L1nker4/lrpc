@@ -18,7 +18,7 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RpcRequest extends BaseMessage implements Serializable{
+public class RpcRequest extends BaseMessage implements Serializable {
 
 
     /**

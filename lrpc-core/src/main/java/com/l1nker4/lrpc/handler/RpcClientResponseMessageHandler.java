@@ -1,5 +1,6 @@
 package com.l1nker4.lrpc.handler;
 
+import com.alibaba.fastjson.JSON;
 import com.l1nker4.lrpc.entity.RpcResponse;
 import com.l1nker4.lrpc.enumeration.ResponseCode;
 import io.netty.channel.ChannelHandler;
@@ -18,13 +19,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @ChannelHandler.Sharable
-public class RpcResponseMessageHandler extends SimpleChannelInboundHandler<RpcResponse> {
+public class RpcClientResponseMessageHandler extends SimpleChannelInboundHandler<RpcResponse> {
 
     public static final Map<Long, Promise<Object>> PROMISES = new ConcurrentHashMap<>();
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcResponse rpcResponse) throws Exception {
-        log.debug("response: {}", rpcResponse);
+        log.info("response: {}", JSON.toJSONString(rpcResponse));
         // 拿到空的 promise
         Promise<Object> promise = PROMISES.remove(rpcResponse.getRequestId());
         if (promise != null) {

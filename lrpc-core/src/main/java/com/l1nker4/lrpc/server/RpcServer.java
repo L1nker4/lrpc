@@ -1,7 +1,7 @@
 package com.l1nker4.lrpc.server;
 
-import com.l1nker4.lrpc.handler.RpcRequestMessageHandler;
-import com.l1nker4.lrpc.protocol.MessageCodecSharable;
+import com.l1nker4.lrpc.handler.RpcServerRequestMessageHandler;
+import com.l1nker4.lrpc.protocol.RequestMessageCodecSharable;
 import com.l1nker4.lrpc.protocol.ProtocolFrameDecoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -37,9 +37,9 @@ public class RpcServer {
                 @Override
                 protected void initChannel(SocketChannel ch) {
                     ch.pipeline().addLast(new ProtocolFrameDecoder());
-//                    ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
-                    ch.pipeline().addLast(new MessageCodecSharable());
-                    ch.pipeline().addLast(new RpcRequestMessageHandler());
+                    ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
+                    ch.pipeline().addLast(new RequestMessageCodecSharable());
+                    ch.pipeline().addLast(new RpcServerRequestMessageHandler());
                 }
             });
             Channel channel = serverBootstrap.bind(port).sync().channel();
@@ -50,10 +50,5 @@ public class RpcServer {
             boss.shutdownGracefully();
             worker.shutdownGracefully();
         }
-    }
-
-    public static void main(String[] args) {
-        RpcServer rpcServer = new RpcServer();
-        rpcServer.start(8080);
     }
 }
