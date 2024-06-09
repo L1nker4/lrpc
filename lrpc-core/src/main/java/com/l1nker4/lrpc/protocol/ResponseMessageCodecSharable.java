@@ -55,7 +55,7 @@ public class ResponseMessageCodecSharable extends MessageToMessageCodec<ByteBuf,
 
         CommonSerializer serializer = CommonSerializer.getByType(SerializerType.getByCode(serializerType));
         Class<? extends BaseMessage> messageClass = BaseMessage.getMessageClass(packageType);
-        BaseMessage baseMessage = serializer.deserialize(messageClass, data);
+        BaseMessage baseMessage = (BaseMessage) serializer.deserialize(messageClass, data);
         out.add(baseMessage);
     }
 

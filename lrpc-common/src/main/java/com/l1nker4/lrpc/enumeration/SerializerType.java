@@ -2,7 +2,6 @@ package com.l1nker4.lrpc.enumeration;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * 序列化方法-枚举类

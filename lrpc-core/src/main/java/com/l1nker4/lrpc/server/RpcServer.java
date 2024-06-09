@@ -1,8 +1,8 @@
 package com.l1nker4.lrpc.server;
 
 import com.l1nker4.lrpc.handler.RpcServerRequestMessageHandler;
-import com.l1nker4.lrpc.protocol.RequestMessageCodecSharable;
 import com.l1nker4.lrpc.protocol.ProtocolFrameDecoder;
+import com.l1nker4.lrpc.protocol.RequestMessageCodecSharable;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -21,12 +21,23 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RpcServer {
 
+    private String host;
+
+    private int port;
+
+
+
+
+    public RpcServer(int port, String host) {
+        this.port = port;
+        this.host = host;
+    }
+
     /**
      * 启动RPC Server的方法
      *
-     * @param port 绑定端口
      */
-    public void start(int port) {
+    public void start() {
         NioEventLoopGroup boss = new NioEventLoopGroup();
         NioEventLoopGroup worker = new NioEventLoopGroup();
         try {

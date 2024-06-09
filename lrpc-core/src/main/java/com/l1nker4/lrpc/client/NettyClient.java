@@ -3,7 +3,6 @@ package com.l1nker4.lrpc.client;
 import com.l1nker4.lrpc.entity.RpcRequest;
 import com.l1nker4.lrpc.entity.RpcResponse;
 import com.l1nker4.lrpc.handler.RpcClientResponseMessageHandler;
-import com.l1nker4.lrpc.protocol.RequestMessageCodecSharable;
 import com.l1nker4.lrpc.protocol.ProtocolFrameDecoder;
 import com.l1nker4.lrpc.protocol.ResponseMessageCodecSharable;
 import io.netty.bootstrap.Bootstrap;

@@ -15,7 +15,7 @@ public interface CommonSerializer {
      * @param <T>
      * @return
      */
-    <T> T deserialize(Class<T> clazz, byte[] bytes);
+    <T> Object deserialize(Class<T> clazz, byte[] bytes);
 
     /**
      * 序列化方法

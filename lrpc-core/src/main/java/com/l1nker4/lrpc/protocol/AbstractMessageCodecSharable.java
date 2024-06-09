@@ -7,12 +7,8 @@ import com.l1nker4.lrpc.entity.BaseMessage;
 import com.l1nker4.lrpc.enumeration.SerializerType;
 import com.l1nker4.lrpc.serializer.CommonSerializer;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToMessageCodec;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 /**
  * 必须和 LengthFieldBasedFrameDecoder 一起使用，确保接到的 ByteBuf 消息是完整的
@@ -52,7 +48,7 @@ public abstract class AbstractMessageCodecSharable {
 
         CommonSerializer serializer = CommonSerializer.getByType(SerializerType.getByCode(serializerType));
         Class<? extends BaseMessage> messageClass = BaseMessage.getMessageClass(packageType);
-        BaseMessage baseMessage = serializer.deserialize(messageClass, data);
+        BaseMessage baseMessage = (BaseMessage) serializer.deserialize(messageClass, data);
         return baseMessage;
     }
 

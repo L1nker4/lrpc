@@ -1,9 +1,12 @@
 package com.l1nker4.test;
 
+import com.l1nker4.entity.HelloRequestEntity;
 import com.l1nker4.lrpc.client.NettyClient;
 import com.l1nker4.lrpc.entity.RpcRequest;
 import com.l1nker4.lrpc.entity.RpcResponse;
 import com.l1nker4.lrpc.protocol.SequenceIdGenerator;
+import com.l1nker4.lrpc.proxy.RpcClientProxy;
+import com.l1nker4.service.HelloService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.CompletableFuture;
@@ -16,18 +19,13 @@ import java.util.concurrent.CompletableFuture;
 public class RpcClientTest {
 
     public static void main(String[] args) {
-        RpcRequest rpcRequest = new RpcRequest("test", "test",
-                new Object[]{1, 2}, null);
-        rpcRequest.setRequestId(SequenceIdGenerator.nextId());
+        RpcClientProxy proxy = new RpcClientProxy("127.0.0.1", 8080);
+        HelloService helloService = proxy.getProxy(HelloService.class);
+        HelloRequestEntity param = new HelloRequestEntity();
+        param.setId(1);
+        param.setMessage("world");
+        String res = helloService.hello(param);
+        System.out.println(res);
 
-        NettyClient nettyClient = new NettyClient();
-
-        CompletableFuture<RpcResponse> result = (CompletableFuture<RpcResponse>) nettyClient.sendRequest(rpcRequest);
-        try {
-            RpcResponse rpcResponse = result.get();
-            log.info("client receive response: {}", rpcResponse);
-        } catch (Exception e) {
-            log.error("error ", e);
-        }
     }
 }

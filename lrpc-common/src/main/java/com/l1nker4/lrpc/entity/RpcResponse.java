@@ -5,7 +5,6 @@ import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.util.Calendar;
 
 /**
  * RPC响应类
@@ -33,7 +32,7 @@ public class RpcResponse<T> extends BaseMessage implements Serializable {
                 .data(data).build();
     }
 
-    public static <T> RpcResponse<T> fail(T data, String requestId) {
+    public static <T> RpcResponse<T> fail(T data, Long requestId) {
         return RpcResponse.<T>builder()
                 .code(ResponseCode.FAILED)
                 .data(data).build();

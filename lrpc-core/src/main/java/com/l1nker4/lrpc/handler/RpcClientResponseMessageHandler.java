@@ -1,6 +1,5 @@
 package com.l1nker4.lrpc.handler;
 
-import com.alibaba.fastjson.JSON;
 import com.l1nker4.lrpc.entity.RpcResponse;
 import com.l1nker4.lrpc.enumeration.ResponseCode;
 import io.netty.channel.ChannelHandler;
@@ -25,16 +24,6 @@ public class RpcClientResponseMessageHandler extends SimpleChannelInboundHandler
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcResponse rpcResponse) throws Exception {
-        log.info("response: {}", JSON.toJSONString(rpcResponse));
-        // 拿到空的 promise
-        Promise<Object> promise = PROMISES.remove(rpcResponse.getRequestId());
-        if (promise != null) {
-            Object returnData = rpcResponse.getData();
-            if (ResponseCode.SUCCESS.equals(rpcResponse.getCode())) {
-                promise.setSuccess(returnData);
-            } else {
-                promise.setFailure(new Exception(String.format("RPC请求出错, data；%s", returnData)));
-            }
-        }
+        System.out.println(rpcResponse);
     }
 }
