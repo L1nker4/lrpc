@@ -34,6 +34,8 @@ public interface CommonSerializer {
         switch (type){
             case PROTOBUF:
                 return new ProtobufSerializer();
+            case HESSIAN:
+                return new HessianSerializer();
             default:
                 return new JsonSerializer();
         }
