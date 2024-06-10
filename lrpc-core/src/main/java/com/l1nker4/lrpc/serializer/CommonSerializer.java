@@ -36,6 +36,8 @@ public interface CommonSerializer {
                 return new ProtobufSerializer();
             case HESSIAN:
                 return new HessianSerializer();
+            case KRYO:
+                return new KryoSerializer();
             default:
                 return new JsonSerializer();
         }

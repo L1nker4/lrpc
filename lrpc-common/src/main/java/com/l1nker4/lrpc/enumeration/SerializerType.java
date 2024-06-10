@@ -18,7 +18,8 @@ public enum SerializerType {
      */
     JSON(0),
     PROTOBUF(1),
-    HESSIAN(2);
+    HESSIAN(2),
+    KRYO(3);
 
     private final int code;
 
