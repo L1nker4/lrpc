@@ -14,4 +14,6 @@ public class Constants {
     public static final byte[] RETAIN_DATA = {0, 0};
 
     public static final byte VERSION = 1;
+
+    public static final String ZOOKEEPER_ADDRESS = "zookeeper.address";
 }

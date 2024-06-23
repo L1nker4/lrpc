@@ -19,7 +19,7 @@ public class RpcServerTest {
         HelloService service = new HelloServiceImpl();
         provider.addServiceProvider("com.l1nker4.service.HelloService", service);
 
-        RpcServer rpcServer = new RpcServer(8080);
+        RpcServer rpcServer = new RpcServer("127.0.0.1", 8080);
         rpcServer.start();
     }
 

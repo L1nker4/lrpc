@@ -2,11 +2,15 @@ package com.l1nker4.lrpc.server;
 
 import com.l1nker4.lrpc.annotation.LrpcService;
 import com.l1nker4.lrpc.annotation.LrpcServiceScan;
+import com.l1nker4.lrpc.config.Config;
+import com.l1nker4.lrpc.constants.Constants;
+import com.l1nker4.lrpc.discovery.ZookeeperServiceDiscovery;
 import com.l1nker4.lrpc.handler.RpcServerRequestMessageHandler;
 import com.l1nker4.lrpc.protocol.ProtocolFrameDecoder;
 import com.l1nker4.lrpc.protocol.RequestMessageCodecSharable;
 import com.l1nker4.lrpc.provider.ServiceProvider;
 import com.l1nker4.lrpc.provider.ServiceProviderFactory;
+import com.l1nker4.lrpc.registry.zookeeper.ZookeeperServiceRegistry;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -20,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
 
+import java.net.InetSocketAddress;
 import java.util.Set;
 
 /**
@@ -30,13 +35,22 @@ import java.util.Set;
 @Slf4j
 public class RpcServer {
 
+    private final String host;
+
     private final int port;
 
     private final ServiceProvider serviceProvider;
 
-    public RpcServer(int port) {
+    private final ZookeeperServiceRegistry zookeeperServiceRegistry;
+
+    private final ZookeeperServiceDiscovery zookeeperServiceDiscovery;
+
+    public RpcServer(String host, int port) {
+        this.host = host;
         this.port = port;
         this.serviceProvider = ServiceProviderFactory.getProvider();
+        this.zookeeperServiceRegistry = new ZookeeperServiceRegistry((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS));
+        this.zookeeperServiceDiscovery = new ZookeeperServiceDiscovery((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS));
         scanService();
     }
 
@@ -52,10 +66,10 @@ public class RpcServer {
             String[] scanPackages = mainClazz.getAnnotation(LrpcServiceScan.class).value();
             for (String scanPackage : scanPackages) {
                 Reflections reflections = new Reflections(scanPackage);
-                Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Deprecated.class);
+                Set<Class<?>> classes = reflections.getTypesAnnotatedWith(LrpcService.class);
                 for (Class<?> clazz : classes) {
                     String serviceName = clazz.getAnnotation(LrpcService.class).value();
-                    if (!clazz.isAnnotationPresent(LrpcServiceScan.class)){
+                    if (!clazz.isAnnotationPresent(LrpcService.class)){
                         log.error("@LrpcService annotation not found in service: {}", clazz.getSimpleName());
                     }
                     Object object;
@@ -83,6 +97,7 @@ public class RpcServer {
 
     private <T> void publishService(String serviceName, T service) {
         serviceProvider.addServiceProvider(serviceName, service);
+        zookeeperServiceRegistry.registerService(serviceName, new InetSocketAddress(host, port));
     }
 
     /**

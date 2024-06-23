@@ -1,13 +1,13 @@
 package com.l1nker4.lrpc.registry;
 
+import java.net.InetSocketAddress;
+
 public interface ServiceRegistry {
 
     /**
-     * register a service
-     * @param serviceName
-     * @param service
+     * register a service to center
+     * @param serviceName serviceName
+     * @param address service socket address
      */
-    void register(String serviceName, Object service);
-
-    Object getService(String serviceName);
+    void registerService(String serviceName, InetSocketAddress address);
 }
