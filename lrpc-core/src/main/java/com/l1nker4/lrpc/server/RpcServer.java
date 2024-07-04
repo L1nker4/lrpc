@@ -4,7 +4,7 @@ import com.l1nker4.lrpc.annotation.LrpcService;
 import com.l1nker4.lrpc.annotation.LrpcServiceScan;
 import com.l1nker4.lrpc.config.Config;
 import com.l1nker4.lrpc.constants.Constants;
-import com.l1nker4.lrpc.discovery.ZookeeperServiceDiscovery;
+import com.l1nker4.lrpc.entity.ProviderService;
 import com.l1nker4.lrpc.handler.RpcServerRequestMessageHandler;
 import com.l1nker4.lrpc.protocol.ProtocolFrameDecoder;
 import com.l1nker4.lrpc.protocol.RequestMessageCodecSharable;
@@ -39,18 +39,12 @@ public class RpcServer {
 
     private final int port;
 
-    private final ServiceProvider serviceProvider;
-
     private final ZookeeperServiceRegistry zookeeperServiceRegistry;
-
-    private final ZookeeperServiceDiscovery zookeeperServiceDiscovery;
 
     public RpcServer(String host, int port) {
         this.host = host;
         this.port = port;
-        this.serviceProvider = ServiceProviderFactory.getProvider();
         this.zookeeperServiceRegistry = new ZookeeperServiceRegistry((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS));
-        this.zookeeperServiceDiscovery = new ZookeeperServiceDiscovery((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS));
         scanService();
     }
 
@@ -68,7 +62,8 @@ public class RpcServer {
                 Reflections reflections = new Reflections(scanPackage);
                 Set<Class<?>> classes = reflections.getTypesAnnotatedWith(LrpcService.class);
                 for (Class<?> clazz : classes) {
-                    String serviceName = clazz.getAnnotation(LrpcService.class).value();
+                    LrpcService lrpcService = clazz.getAnnotation(LrpcService.class);
+                    String serviceName = lrpcService.value();
                     if (!clazz.isAnnotationPresent(LrpcService.class)){
                         log.error("@LrpcService annotation not found in service: {}", clazz.getSimpleName());
                     }
@@ -79,13 +74,19 @@ public class RpcServer {
                         log.error(e.getMessage());
                         continue;
                     }
+                    ProviderService providerService = ProviderService.builder()
+                            .weight(lrpcService.weight())
+                            .groupName(lrpcService.group())
+                            .version(lrpcService.version()).build();
                     if (StringUtils.isBlank(serviceName)) {
                         Class<?>[] interfaces = clazz.getInterfaces();
                         for (Class<?> anInterface : interfaces) {
-                            publishService(anInterface.getCanonicalName(), object);
+                            providerService.setServiceName(anInterface.getCanonicalName());
+                            publishService(providerService, object);
                         }
                     }else {
-                        publishService(serviceName, object);
+                        providerService.setServiceName(serviceName);
+                        publishService(providerService, object);
                     }
                 }
             }
@@ -95,9 +96,9 @@ public class RpcServer {
         }
     }
 
-    private <T> void publishService(String serviceName, T service) {
-        serviceProvider.addServiceProvider(serviceName, service);
-        zookeeperServiceRegistry.registerService(serviceName, new InetSocketAddress(host, port));
+    private <T> void publishService(ProviderService providerService, T service) {
+        providerService.setAddress(host + ":" + port);
+        zookeeperServiceRegistry.registerService(providerService);
     }
 
     /**

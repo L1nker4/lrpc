@@ -1,13 +1,22 @@
 package com.l1nker4.lrpc.registry;
 
-import java.net.InetSocketAddress;
+import com.l1nker4.lrpc.entity.ProviderService;
+
 
 public interface ServiceRegistry {
 
     /**
      * register a service to center
-     * @param serviceName serviceName
-     * @param address service socket address
+     * @param serviceProvider serviceProvider
      */
-    void registerService(String serviceName, InetSocketAddress address);
+    void registerService(ProviderService serviceProvider);
+
+    /**
+     * get a service instance
+     * @param servicePath
+     * @return
+     */
+    ProviderService getService(String servicePath);
+
+    void initServiceMap();
 }

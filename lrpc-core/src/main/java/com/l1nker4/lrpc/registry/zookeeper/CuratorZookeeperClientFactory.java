@@ -12,7 +12,7 @@ public class CuratorZookeeperClientFactory {
 
     private final static Map<String, CuratorZookeeperClient> clients = new ConcurrentHashMap<>();
 
-    private final static Integer TIMEOUT = 1000 * 3;
+    private final static Integer TIMEOUT = 1000 * 10;
 
     public static CuratorZookeeperClient getClients(String address) {
         if (clients.containsKey(address)){

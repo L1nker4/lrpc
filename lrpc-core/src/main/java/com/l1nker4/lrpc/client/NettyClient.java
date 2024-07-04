@@ -2,12 +2,13 @@ package com.l1nker4.lrpc.client;
 
 import com.l1nker4.lrpc.config.Config;
 import com.l1nker4.lrpc.constants.Constants;
-import com.l1nker4.lrpc.discovery.ZookeeperServiceDiscovery;
+import com.l1nker4.lrpc.entity.ProviderService;
 import com.l1nker4.lrpc.entity.RpcRequest;
 import com.l1nker4.lrpc.entity.RpcResponse;
 import com.l1nker4.lrpc.handler.RpcClientResponseMessageHandler;
 import com.l1nker4.lrpc.protocol.ProtocolFrameDecoder;
 import com.l1nker4.lrpc.protocol.ResponseMessageCodecSharable;
+import com.l1nker4.lrpc.registry.zookeeper.ZookeeperServiceRegistry;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -19,8 +20,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -32,10 +33,10 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class NettyClient implements RpcClient {
 
-    private final ZookeeperServiceDiscovery serviceDiscovery;
+    private final ZookeeperServiceRegistry serviceRegistry;
 
     public NettyClient() {
-        this.serviceDiscovery = new ZookeeperServiceDiscovery((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS));
+        this.serviceRegistry = new ZookeeperServiceRegistry((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS));
     }
 
     @Override
@@ -56,9 +57,16 @@ public class NettyClient implements RpcClient {
                 }
             });
 
-            InetSocketAddress providerAddress = serviceDiscovery.getServiceInstance(request.getInterfaceName());
-            Channel channel = bootstrap.connect(providerAddress.getAddress(), providerAddress.getPort()).sync().channel();
+            String servicePath = request.getGroupName() + Constants.SLASH + request.getInterfaceName() + Constants.SLASH + request.getVersion();
 
+            ProviderService providerService = serviceRegistry.getService(servicePath);
+            String address = providerService.getAddress();
+            if (StringUtils.isBlank(address)){
+                throw new RuntimeException("illegal service address");
+            }
+
+            String[] splitStr = address.split(":");
+            Channel channel = bootstrap.connect(splitStr[0], Integer.parseInt(splitStr[1])).sync().channel();
             log.info("rpc client request : {}", request);
             ChannelFuture future = channel.writeAndFlush(request).addListener((ChannelFutureListener) promise -> {
                 if (!promise.isSuccess()) {

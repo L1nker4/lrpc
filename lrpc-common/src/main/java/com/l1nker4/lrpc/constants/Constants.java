@@ -16,4 +16,12 @@ public class Constants {
     public static final byte VERSION = 1;
 
     public static final String ZOOKEEPER_ADDRESS = "zookeeper.address";
+
+    public static final String ROOT_PATH = "/lrpc";
+
+    public static final String SLASH = "/";
+
+    public static final String DEFAULT_GROUP_NAME = "default-group";
+
+    public static final String DEFAULT_VERSION = "1";
 }

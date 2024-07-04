@@ -21,8 +21,6 @@ public class CuratorZookeeperClient implements RegistryClient {
 
     private CuratorFramework client;
 
-    private static final String ROOT_PATH = "/lrpc/";
-
     public CuratorZookeeperClient(String address, int timeout) {
         connect(address, timeout);
     }
@@ -41,12 +39,34 @@ public class CuratorZookeeperClient implements RegistryClient {
     @Override
     public void create(String path, CreateMode mode) {
         try {
-            client.create().creatingParentsIfNeeded().withMode(mode).forPath(ROOT_PATH + path);
+            client.create().creatingParentsIfNeeded().withMode(mode).forPath(path);
         } catch (KeeperException.NodeExistsException e){
             log.error("the node already exists in the zookeeper", e);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    @Override
+    public void create(String path, byte[] data, CreateMode mode) {
+        try {
+            client.create().creatingParentsIfNeeded().withMode(mode).forPath(path, data);
+        } catch (KeeperException.NodeExistsException e){
+            log.error("the node already exists in the zookeeper", e);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
+    public boolean exists(String path) {
+        Stat stat;
+        try {
+             stat = client.checkExists().forPath(path);
+        }catch (Exception e){
+            throw new IllegalStateException(e);
+        }
+        return stat != null;
     }
 
     @Override
@@ -63,7 +83,7 @@ public class CuratorZookeeperClient implements RegistryClient {
     @Override
     public List<String> getChildren(String path) {
         try {
-            return client.getChildren().forPath(ROOT_PATH + path);
+            return client.getChildren().forPath(path);
         } catch (Exception e) {
             return null;
         }

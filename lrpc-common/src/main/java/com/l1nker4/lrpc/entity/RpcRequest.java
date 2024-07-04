@@ -27,6 +27,16 @@ public class RpcRequest extends BaseMessage implements Serializable {
     private String interfaceName;
 
     /**
+     * 接口组
+     */
+    private String groupName;
+
+    /**
+     * 接口版本号
+     */
+    private String version;
+
+    /**
      * 调用方法名称
      */
     private String methodName;

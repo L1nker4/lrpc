@@ -21,6 +21,21 @@ public interface RegistryClient {
     void create(String path, CreateMode mode);
 
     /**
+     * create Znode with data in Zookeeper
+     * @param path the path of the node
+     * @param data data
+     * @param mode createMode
+     */
+    void create(String path, byte[] data, CreateMode mode);
+
+    /**
+     *
+     * @param path path
+     * @return return true if the path exists
+     */
+    boolean exists(String path);
+
+    /**
      * delete the Znode in Zookeeper
      * @param path the path of the node
      */
