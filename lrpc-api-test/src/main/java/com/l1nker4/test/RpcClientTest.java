@@ -19,13 +19,12 @@ import java.util.concurrent.CompletableFuture;
 public class RpcClientTest {
 
     public static void main(String[] args) {
-        RpcClientProxy proxy = new RpcClientProxy("127.0.0.1", 8080);
+        RpcClientProxy proxy = new RpcClientProxy();
         HelloService helloService = proxy.getProxy(HelloService.class);
         HelloRequestEntity param = new HelloRequestEntity();
         param.setId(1);
         param.setMessage("world");
         String res = helloService.hello(param);
         System.out.println(res);
-
     }
 }

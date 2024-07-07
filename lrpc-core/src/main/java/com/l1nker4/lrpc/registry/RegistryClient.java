@@ -1,5 +1,10 @@
 package com.l1nker4.lrpc.registry;
 
+import org.apache.curator.framework.api.CuratorListener;
+import org.apache.curator.framework.api.CuratorWatcher;
+import org.apache.curator.framework.recipes.cache.CuratorCache;
+import org.apache.curator.framework.recipes.cache.PathChildrenCache;
+import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.zookeeper.CreateMode;
 
 import java.util.List;
@@ -48,4 +53,21 @@ public interface RegistryClient {
      */
     List<String> getChildren(String path);
 
+    /**
+     * get the data of the path
+     * @param path
+     * @return
+     */
+    byte[] getData(String path);
+
+    /**
+     * add watcher to the path
+     * @param path
+     * @param watcher
+     */
+    void addWatcher(String path, CuratorWatcher watcher);
+
+    TreeCache registerTreeCache(String path);
+
+    PathChildrenCache registerPathChildrenCache(String path);
 }

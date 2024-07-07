@@ -18,6 +18,11 @@ public class NacosServiceRegistry extends AbstractServiceRegistry {
     }
 
     @Override
+    public void unregisterService(ProviderService providerService) {
+
+    }
+
+    @Override
     public ProviderService getService(String servicePath) {
         return null;
     }

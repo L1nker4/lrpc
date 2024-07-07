@@ -11,7 +11,7 @@ import com.l1nker4.lrpc.server.RpcServer;
 public class RpcServerTest {
 
     public static void main(String[] args) {
-        RpcServer rpcServer = new RpcServer("127.0.0.1", 8080);
+        RpcServer rpcServer = new RpcServer("127.0.0.1", 8082);
         rpcServer.start();
     }
 

@@ -12,13 +12,7 @@ import java.lang.reflect.Proxy;
 
 public class RpcClientProxy implements InvocationHandler {
 
-    private final String host;
-
-    private final int port;
-
-    public RpcClientProxy(String host, int port) {
-        this.host = host;
-        this.port = port;
+    public RpcClientProxy() {
     }
 
     @SuppressWarnings("unchecked")

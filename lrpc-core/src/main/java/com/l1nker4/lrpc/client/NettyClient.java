@@ -57,7 +57,12 @@ public class NettyClient implements RpcClient {
                 }
             });
 
-            String servicePath = request.getGroupName() + Constants.SLASH + request.getInterfaceName() + Constants.SLASH + request.getVersion();
+            String servicePath = Constants.ROOT_PATH
+                    + Constants.SLASH
+                    + request.getGroupName()
+                    + Constants.SLASH
+                    + request.getInterfaceName()
+                    + Constants.SLASH + request.getVersion();
 
             ProviderService providerService = serviceRegistry.getService(servicePath);
             String address = providerService.getAddress();

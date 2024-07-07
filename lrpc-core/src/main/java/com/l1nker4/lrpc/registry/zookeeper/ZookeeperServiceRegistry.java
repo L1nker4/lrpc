@@ -1,17 +1,32 @@
 package com.l1nker4.lrpc.registry.zookeeper;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.google.common.collect.Lists;
 import com.l1nker4.lrpc.constants.Constants;
 import com.l1nker4.lrpc.entity.ProviderService;
 import com.l1nker4.lrpc.registry.AbstractServiceRegistry;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.curator.framework.api.CuratorWatcher;
+import org.apache.curator.framework.recipes.cache.PathChildrenCache;
+import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
+import org.apache.curator.framework.recipes.cache.TreeCache;
+import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 
+@Slf4j
 public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
 
     private final CuratorZookeeperClient zookeeperClient;
@@ -21,6 +36,66 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
 
     public ZookeeperServiceRegistry(String address) {
         this.zookeeperClient = CuratorZookeeperClientFactory.getClients(address);
+        initServiceMap();
+        registerWatcher();
+    }
+
+    private void registerWatcher() {
+        TreeCache treeCache = zookeeperClient.registerTreeCache(Constants.ROOT_PATH);
+        CountDownLatch latch = new CountDownLatch(1);
+        Executors.newSingleThreadExecutor().submit(() -> {
+            try {
+                treeCache.start();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            treeCache.getListenable().addListener(((client, event) -> {
+                handleZookeeperEvent(event);
+            }));
+            // 添加钩子，以便在程序退出时释放资源
+            Runtime.getRuntime().addShutdownHook(new Thread(latch::countDown));
+            // 等待
+            try {
+                latch.await();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private void handleZookeeperEvent(TreeCacheEvent event) {
+        String path = event.getData().getPath();
+        if (!isValidPath(path)){
+            log.info("node is not a valid path: {}", path);
+            return;
+        }
+        byte[] data = event.getData().getData();
+        ProviderService providerService = JSON.to(ProviderService.class, JSONObject.parseObject(new String(data)));
+        String mapKey = path.substring(0, path.lastIndexOf(Constants.SLASH));
+        List<ProviderService> providerServiceList = providerServiceMap.get(mapKey);
+        switch (event.getType()){
+            case NODE_ADDED:
+                if (!providerServiceList.contains(providerService)) {
+                    log.info("add provider: {}", providerService);
+                    providerServiceList.add(providerService);
+                }
+                break;
+            case NODE_REMOVED:
+                providerServiceList.remove(providerService);
+                log.info("remove provider: {}", providerService);
+                break;
+            default:
+                log.info("event type:{}", event.getType());
+        }
+    }
+
+    private boolean isValidPath(String path) {
+        String lastElement = path.substring(path.lastIndexOf("/") + 1);
+        if (StringUtils.isBlank(lastElement)) {
+            return false;
+        }
+        String[] split = lastElement.split(":");
+        return split.length == 2;
     }
 
     @Override
@@ -31,10 +106,32 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
         String servicePath = providerService.getServicePath();
         List<ProviderService> serviceList = providerServiceMap.getOrDefault(servicePath, Lists.newArrayList());
         serviceList.add(providerService);
-        providerServiceMap.put(servicePath, serviceList);
-        zookeeperClient.create(Constants.ROOT_PATH + Constants.SLASH + servicePath,
-                providerService.getAddress().getBytes(StandardCharsets.UTF_8),
+
+        providerServiceMap.put(Constants.ROOT_PATH + Constants.SLASH + servicePath, serviceList);
+        String baseServicePath = Constants.ROOT_PATH
+                + Constants.SLASH
+                + servicePath
+                + Constants.SLASH
+                + providerService.getAddress();
+
+        zookeeperClient.create(baseServicePath,
+                JSON.toJSONString(providerService).getBytes(StandardCharsets.UTF_8),
                 CreateMode.EPHEMERAL);
+    }
+
+    @Override
+    public void unregisterService(ProviderService providerService) {
+        if (!zookeeperClient.exists(Constants.ROOT_PATH)){
+            throw new IllegalStateException("Zookeeper service not exists");
+        }
+        String servicePath = providerService.getServicePath();
+        String baseServicePath = Constants.ROOT_PATH
+                + Constants.SLASH
+                + servicePath
+                + Constants.SLASH
+                + providerService.getAddress();
+        zookeeperClient.delete(baseServicePath);
+        log.info("unregister service: {}", providerService);
     }
 
     @Override
@@ -50,6 +147,46 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
 
     @Override
     public void initServiceMap() {
-        //TODO init map
+        List<String> groupNameList = zookeeperClient.getChildren(Constants.ROOT_PATH);
+        if (CollectionUtils.isEmpty(groupNameList)){
+            log.info("zookeeper group name list is empty");
+            return;
+        }
+        for (String groupName : groupNameList) {
+            String groupPath = Constants.ROOT_PATH + Constants.SLASH + groupName;
+            List<String> currGroupChildList = zookeeperClient.getChildren(groupPath);
+            if (CollectionUtils.isEmpty(currGroupChildList)){
+                log.info("zookeeper group child list is empty");
+                return;
+            }
+            for (String serviceName : currGroupChildList) {
+                String servicePath = groupPath + Constants.SLASH + serviceName;
+                List<String> versionList = zookeeperClient.getChildren(servicePath);
+                if (CollectionUtils.isEmpty(versionList)){
+                    log.info("zookeeper service version list is empty");
+                    return;
+                }
+                for (String version : versionList) {
+                    String versionPath = servicePath + Constants.SLASH + version;
+                    List<String> providerList = zookeeperClient.getChildren(versionPath);
+                    if (CollectionUtils.isEmpty(providerList)){
+                        log.info("zookeeper service provider list is empty");
+                        return;
+                    }
+                    for (String providerAddress : providerList) {
+                        String providerPath = versionPath + Constants.SLASH + providerAddress;
+                        byte[] data = zookeeperClient.getData(providerPath);
+                        try {
+                            ProviderService providerService = JSON.to(ProviderService.class, JSONObject.parseObject(new String(data)));
+                            List<ProviderService> serviceList = providerServiceMap.getOrDefault(versionPath, Lists.newArrayList());
+                            serviceList.add(providerService);
+                            providerServiceMap.put(versionPath, serviceList);
+                        }catch (Exception e){
+                            log.error("serialize zookeeper service error", e);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

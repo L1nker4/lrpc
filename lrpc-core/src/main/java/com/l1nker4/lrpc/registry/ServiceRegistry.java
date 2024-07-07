@@ -11,6 +11,8 @@ public interface ServiceRegistry {
      */
     void registerService(ProviderService serviceProvider);
 
+    void unregisterService(ProviderService providerService);
+
     /**
      * get a service instance
      * @param servicePath
