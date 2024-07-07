@@ -14,6 +14,8 @@ public abstract class Config {
 
     static Properties properties;
 
+    public static final String SELECTOR_STRATEGY = "selector.strategy";
+
     static {
         try (InputStream in = Config.class.getResourceAsStream("/config.properties")) {
             properties = new Properties();

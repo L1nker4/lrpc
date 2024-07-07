@@ -6,20 +6,16 @@ import com.google.common.collect.Lists;
 import com.l1nker4.lrpc.constants.Constants;
 import com.l1nker4.lrpc.entity.ProviderService;
 import com.l1nker4.lrpc.registry.AbstractServiceRegistry;
+import com.l1nker4.lrpc.selector.LoadBalanceFactory;
+import com.l1nker4.lrpc.selector.LoadBalanceSelector;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.curator.framework.api.CuratorWatcher;
-import org.apache.curator.framework.recipes.cache.PathChildrenCache;
-import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,11 +27,13 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
 
     private final CuratorZookeeperClient zookeeperClient;
 
-    //TODO Zookeeper watch
     private final Map<String, List<ProviderService>> providerServiceMap = new ConcurrentHashMap<>();
 
-    public ZookeeperServiceRegistry(String address) {
+    private LoadBalanceSelector loadBalanceSelector;
+
+    public ZookeeperServiceRegistry(String address, String loadBalanceStrategy) {
         this.zookeeperClient = CuratorZookeeperClientFactory.getClients(address);
+        this.loadBalanceSelector = LoadBalanceFactory.getLoadBalanceSelector(loadBalanceStrategy);
         initServiceMap();
         registerWatcher();
     }
@@ -140,8 +138,7 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
         if (CollectionUtils.isEmpty(providerServices)){
             return null;
         }else {
-            //TODO selector
-            return providerServices.get(0);
+            return loadBalanceSelector.select(providerServices);
         }
     }
 

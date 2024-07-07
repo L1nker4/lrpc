@@ -1,5 +1,7 @@
 package com.l1nker4.lrpc.registry.zookeeper;
 
+import com.l1nker4.lrpc.config.Config;
+
 /**
  * @author ：L1nker4
  * @description:
@@ -12,10 +14,11 @@ public class ZookeeperServiceRegistryFactory {
     private ZookeeperServiceRegistryFactory() {}
 
     public static ZookeeperServiceRegistry getZookeeperServiceRegistry(String address) {
+        String selectorStrategy = (String) Config.getByName(Config.SELECTOR_STRATEGY);
         if (serviceRegistry == null) {
             synchronized (ZookeeperServiceRegistry.class) {
                 if (serviceRegistry == null) {
-                    serviceRegistry = new ZookeeperServiceRegistry(address);
+                    serviceRegistry = new ZookeeperServiceRegistry(address, selectorStrategy);
                 }
             }
         }

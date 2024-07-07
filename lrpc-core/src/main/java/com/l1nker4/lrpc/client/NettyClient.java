@@ -36,7 +36,8 @@ public class NettyClient implements RpcClient {
     private final ZookeeperServiceRegistry serviceRegistry;
 
     public NettyClient() {
-        this.serviceRegistry = new ZookeeperServiceRegistry((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS));
+        String selectorStrategy = (String) Config.getByName(Config.SELECTOR_STRATEGY);
+        this.serviceRegistry = new ZookeeperServiceRegistry((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS), selectorStrategy);
     }
 
     @Override

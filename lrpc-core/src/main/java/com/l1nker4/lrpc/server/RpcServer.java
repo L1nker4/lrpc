@@ -44,7 +44,8 @@ public class RpcServer {
     public RpcServer(String host, int port) {
         this.host = host;
         this.port = port;
-        this.zookeeperServiceRegistry = new ZookeeperServiceRegistry((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS));
+        String selectorStrategy = (String) Config.getByName(Config.SELECTOR_STRATEGY);
+        this.zookeeperServiceRegistry = new ZookeeperServiceRegistry((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS), selectorStrategy);
         scanService();
     }
 
