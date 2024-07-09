@@ -12,7 +12,10 @@ import java.lang.reflect.Proxy;
 
 public class RpcClientProxy implements InvocationHandler {
 
+    private final RpcClient rpcClient;
+
     public RpcClientProxy() {
+        rpcClient = new NettyClient();
     }
 
     @SuppressWarnings("unchecked")
@@ -32,7 +35,6 @@ public class RpcClientProxy implements InvocationHandler {
                 .paramTypes(method.getParameterTypes())
                 .build();
 
-        RpcClient rpcClient = new NettyClient();
         return ((RpcResponse<?>) rpcClient.sendRequest(rpcRequest)).getData();
     }
 }

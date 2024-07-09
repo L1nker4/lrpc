@@ -6,6 +6,7 @@ import com.l1nker4.lrpc.entity.RpcResponse;
 import com.l1nker4.lrpc.enumeration.ResponseCode;
 import com.l1nker4.lrpc.provider.ServiceProvider;
 import com.l1nker4.lrpc.provider.ServiceProviderFactory;
+import com.l1nker4.lrpc.registry.zookeeper.ZookeeperServiceRegistry;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -25,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @ChannelHandler.Sharable
 public class RpcServerRequestMessageHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
-    public static final Map<String, Promise<Object>> PROMISES = new ConcurrentHashMap<>();
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcRequest rpcRequest) throws Exception {

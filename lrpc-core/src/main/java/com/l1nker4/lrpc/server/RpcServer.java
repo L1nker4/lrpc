@@ -39,11 +39,14 @@ public class RpcServer {
 
     private final int port;
 
+    private final ServiceProvider serviceProvider;
+
     private final ZookeeperServiceRegistry zookeeperServiceRegistry;
 
     public RpcServer(String host, int port) {
         this.host = host;
         this.port = port;
+        this.serviceProvider = ServiceProviderFactory.getProvider();
         String selectorStrategy = (String) Config.getByName(Config.SELECTOR_STRATEGY);
         this.zookeeperServiceRegistry = new ZookeeperServiceRegistry((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS), selectorStrategy);
         scanService();
@@ -99,6 +102,7 @@ public class RpcServer {
 
     private <T> void publishService(ProviderService providerService, T service) {
         providerService.setAddress(host + ":" + port);
+        serviceProvider.addServiceProvider(providerService, service);
         zookeeperServiceRegistry.registerService(providerService);
     }
 

@@ -11,6 +11,7 @@ import com.l1nker4.lrpc.selector.LoadBalanceSelector;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.zookeeper.CreateMode;
@@ -29,7 +30,7 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
 
     private final Map<String, List<ProviderService>> providerServiceMap = new ConcurrentHashMap<>();
 
-    private LoadBalanceSelector loadBalanceSelector;
+    private final LoadBalanceSelector loadBalanceSelector;
 
     public ZookeeperServiceRegistry(String address, String loadBalanceStrategy) {
         this.zookeeperClient = CuratorZookeeperClientFactory.getClients(address);
@@ -62,12 +63,16 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
     }
 
     private void handleZookeeperEvent(TreeCacheEvent event) {
-        String path = event.getData().getPath();
+        ChildData eventData = event.getData();
+        if (eventData == null){
+            return;
+        }
+        String path = eventData.getPath();
         if (!isValidPath(path)){
             log.info("node is not a valid path: {}", path);
             return;
         }
-        byte[] data = event.getData().getData();
+        byte[] data = eventData.getData();
         ProviderService providerService = JSON.to(ProviderService.class, JSONObject.parseObject(new String(data)));
         String mapKey = path.substring(0, path.lastIndexOf(Constants.SLASH));
         List<ProviderService> providerServiceList = providerServiceMap.get(mapKey);
@@ -82,6 +87,7 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
                 providerServiceList.remove(providerService);
                 log.info("remove provider: {}", providerService);
                 break;
+            case CONNECTION_LOST:
             default:
                 log.info("event type:{}", event.getType());
         }

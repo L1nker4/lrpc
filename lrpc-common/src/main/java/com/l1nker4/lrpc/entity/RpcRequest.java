@@ -1,5 +1,6 @@
 package com.l1nker4.lrpc.entity;
 
+import com.l1nker4.lrpc.constants.Constants;
 import lombok.*;
 
 import java.io.Serializable;
@@ -50,5 +51,14 @@ public class RpcRequest extends BaseMessage implements Serializable {
      * 调用方法的参数类型
      */
     private Class<?>[] paramTypes;
+
+    public String getServicePath() {
+        return Constants.ROOT_PATH
+                + Constants.SLASH
+                + groupName
+                + Constants.SLASH
+                + interfaceName
+                + Constants.SLASH + version;
+    }
 
 }

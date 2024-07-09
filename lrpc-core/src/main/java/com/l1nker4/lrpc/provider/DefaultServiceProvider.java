@@ -14,12 +14,11 @@ public class DefaultServiceProvider implements ServiceProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultServiceProvider.class);
 
-    private static final Map<String, List<ProviderService>> serviceMap = new ConcurrentHashMap<>();
+    private static final Map<String, Object> serviceMap = new ConcurrentHashMap<>();
 
     @Override
     public <T> void addServiceProvider(ProviderService providerService, T service) {
-        List<ProviderService> serviceList = serviceMap.getOrDefault(providerService.getServiceName(), Lists.newArrayList());
-        serviceList.add(providerService);
+        serviceMap.put(providerService.getServiceName(), service);
         logger.info("向接口: {} 注册服务: {}", service.getClass().getInterfaces(), providerService.toString());
     }
 

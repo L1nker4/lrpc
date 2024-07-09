@@ -41,7 +41,7 @@ public class NettyClient implements RpcClient {
     }
 
     @Override
-    public Object sendRequest(RpcRequest request) {
+    public CompletableFuture<RpcResponse> sendRequest(RpcRequest request) {
         NioEventLoopGroup group = new NioEventLoopGroup();
         CompletableFuture<RpcResponse> resultFuture = new CompletableFuture<>();
         try {
@@ -79,6 +79,8 @@ public class NettyClient implements RpcClient {
                     promise.channel().close();
                     resultFuture.completeExceptionally(promise.cause());
                     log.error("发送消息时有错误发生: ", promise.cause());
+                }else {
+                    log.info("RPC response: {}", promise.get());
                 }
             });
             channel.closeFuture().sync();

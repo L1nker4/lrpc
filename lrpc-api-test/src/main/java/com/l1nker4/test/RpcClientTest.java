@@ -9,6 +9,7 @@ import com.l1nker4.lrpc.proxy.RpcClientProxy;
 import com.l1nker4.service.HelloService;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -18,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class RpcClientTest {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         RpcClientProxy proxy = new RpcClientProxy();
         HelloService helloService = proxy.getProxy(HelloService.class);
         HelloRequestEntity param = new HelloRequestEntity();
