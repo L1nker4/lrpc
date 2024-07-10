@@ -24,18 +24,18 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @ChannelHandler.Sharable
-public class RpcServerRequestMessageHandler extends SimpleChannelInboundHandler<RpcRequest> {
+public class RpcServerRequestMessageHandler extends SimpleChannelInboundHandler<RpcRequest>  {
 
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcRequest rpcRequest) throws Exception {
         log.info("rpcRequest: {}", rpcRequest);
-        RpcResponse response = invoke(rpcRequest);
+        RpcResponse<?> response = invoke(rpcRequest);
         channelHandlerContext.writeAndFlush(response);
     }
 
-    private RpcResponse invoke(RpcRequest rpcRequest) throws Exception {
-        RpcResponse response = new RpcResponse<>();
+    private RpcResponse<Object> invoke(RpcRequest rpcRequest) throws Exception {
+        RpcResponse<Object> response = new RpcResponse<>();
         response.setRequestId(rpcRequest.getRequestId());
 
         Object result;
@@ -47,7 +47,8 @@ public class RpcServerRequestMessageHandler extends SimpleChannelInboundHandler<
             Method method = service.getClass().getMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
             result = method.invoke(service, rpcRequest.getParameters());
         }catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e){
-            return RpcResponse.fail("method not found", rpcRequest.getRequestId());
+            return response.setData(e.getMessage())
+                    .setCode(ResponseCode.FAILED);
         }
         response.setCode(ResponseCode.SUCCESS)
                 .setData(result);

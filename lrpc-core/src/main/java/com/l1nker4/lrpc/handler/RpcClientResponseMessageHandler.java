@@ -1,5 +1,6 @@
 package com.l1nker4.lrpc.handler;
 
+import com.l1nker4.lrpc.client.LrpcResponseHolder;
 import com.l1nker4.lrpc.entity.RpcResponse;
 import com.l1nker4.lrpc.enumeration.ResponseCode;
 import io.netty.channel.ChannelHandler;
@@ -20,10 +21,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @ChannelHandler.Sharable
 public class RpcClientResponseMessageHandler extends SimpleChannelInboundHandler<RpcResponse> {
 
-    public static final Map<Long, Promise<Object>> PROMISES = new ConcurrentHashMap<>();
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcResponse rpcResponse) throws Exception {
-        System.out.println(rpcResponse);
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcResponse rpcResponse) {
+        LrpcResponseHolder.put(rpcResponse.getRequestId(), rpcResponse);
+        log.info("rpc response: {}", rpcResponse);
     }
 }

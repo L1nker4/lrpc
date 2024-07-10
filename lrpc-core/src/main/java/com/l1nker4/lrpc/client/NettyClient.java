@@ -10,10 +10,7 @@ import com.l1nker4.lrpc.protocol.ProtocolFrameDecoder;
 import com.l1nker4.lrpc.protocol.ResponseMessageCodecSharable;
 import com.l1nker4.lrpc.registry.zookeeper.ZookeeperServiceRegistry;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelInitializer;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -41,9 +38,8 @@ public class NettyClient implements RpcClient {
     }
 
     @Override
-    public CompletableFuture<RpcResponse> sendRequest(RpcRequest request) {
+    public RpcResponse<?> sendRequest(RpcRequest request) {
         NioEventLoopGroup group = new NioEventLoopGroup();
-        CompletableFuture<RpcResponse> resultFuture = new CompletableFuture<>();
         try {
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.channel(NioSocketChannel.class);
@@ -67,28 +63,27 @@ public class NettyClient implements RpcClient {
 
             ProviderService providerService = serviceRegistry.getService(servicePath);
             String address = providerService.getAddress();
-            if (StringUtils.isBlank(address)){
+            if (StringUtils.isBlank(address)) {
                 throw new RuntimeException("illegal service address");
             }
 
             String[] splitStr = address.split(":");
             Channel channel = bootstrap.connect(splitStr[0], Integer.parseInt(splitStr[1])).sync().channel();
             log.info("rpc client request : {}", request);
-            ChannelFuture future = channel.writeAndFlush(request).addListener((ChannelFutureListener) promise -> {
+            channel.writeAndFlush(request).addListener((ChannelFutureListener) promise -> {
                 if (!promise.isSuccess()) {
                     promise.channel().close();
-                    resultFuture.completeExceptionally(promise.cause());
                     log.error("发送消息时有错误发生: ", promise.cause());
-                }else {
-                    log.info("RPC response: {}", promise.get());
+                } else {
+                    log.info("发送消息成功");
                 }
             });
             channel.closeFuture().sync();
         } catch (Exception e) {
             log.error("client error", e);
         } finally {
-            group.shutdownGracefully();
+//            group.shutdownGracefully();
         }
-        return resultFuture;
+        return LrpcResponseHolder.get(request.getRequestId());
     }
 }

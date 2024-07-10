@@ -1,10 +1,12 @@
 package com.l1nker4.lrpc.proxy;
 
+import com.l1nker4.lrpc.client.LrpcResponseHolder;
 import com.l1nker4.lrpc.client.NettyClient;
 import com.l1nker4.lrpc.client.RpcClient;
 import com.l1nker4.lrpc.constants.Constants;
 import com.l1nker4.lrpc.entity.RpcRequest;
 import com.l1nker4.lrpc.entity.RpcResponse;
+import com.l1nker4.lrpc.utils.RequestIdGenerator;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -27,6 +29,7 @@ public class RpcClientProxy implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String interfaceName = method.getDeclaringClass().getName();
         RpcRequest rpcRequest = RpcRequest.builder()
+                .requestId(RequestIdGenerator.nextId())
                 .interfaceName(interfaceName)
                 .version(Constants.DEFAULT_VERSION)
                 .groupName(Constants.DEFAULT_GROUP_NAME)
@@ -35,6 +38,7 @@ public class RpcClientProxy implements InvocationHandler {
                 .paramTypes(method.getParameterTypes())
                 .build();
 
-        return ((RpcResponse<?>) rpcClient.sendRequest(rpcRequest)).getData();
+        rpcClient.sendRequest(rpcRequest);
+        return LrpcResponseHolder.get(rpcRequest.getRequestId());
     }
 }

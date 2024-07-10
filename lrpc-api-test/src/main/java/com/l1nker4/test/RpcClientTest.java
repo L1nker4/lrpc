@@ -26,6 +26,6 @@ public class RpcClientTest {
         param.setId(1);
         param.setMessage("world");
         String res = helloService.hello(param);
-        System.out.println(res);
+        log.info("helloService result: {}", res);
     }
 }

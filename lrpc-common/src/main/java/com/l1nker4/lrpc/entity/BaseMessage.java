@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,12 +18,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 @AllArgsConstructor
 @Data
 @ToString(callSuper = true)
+@SuperBuilder
 public class BaseMessage {
 
     /**
      * 请求id
      */
-    private Long requestId;
+    private String requestId;
 
 
     private static final AtomicInteger COUNT = new AtomicInteger(0);

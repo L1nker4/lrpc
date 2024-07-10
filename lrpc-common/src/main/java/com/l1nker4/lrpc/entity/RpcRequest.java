@@ -2,6 +2,7 @@ package com.l1nker4.lrpc.entity;
 
 import com.l1nker4.lrpc.constants.Constants;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 
@@ -14,11 +15,12 @@ import java.io.Serializable;
  */
 
 @EqualsAndHashCode(callSuper = true)
-@Data
 @ToString(callSuper = true)
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class RpcRequest extends BaseMessage implements Serializable {
 
 
