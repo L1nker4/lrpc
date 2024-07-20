@@ -4,7 +4,9 @@ import com.l1nker4.lrpc.enumeration.SerializerType;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author ：L1nker4
@@ -14,23 +16,34 @@ public abstract class Config {
 
     static Properties properties;
 
-    public static final String SELECTOR_STRATEGY = "selector.strategy";
+    private static final Map<String, String> configMap = new ConcurrentHashMap<>();
 
     static {
         try (InputStream in = Config.class.getResourceAsStream("/config.properties")) {
             properties = new Properties();
             properties.load(in);
+            initMap();
         } catch (IOException e) {
             throw new ExceptionInInitializerError(e);
         }
     }
 
+    private static void initMap() {
+        properties.forEach((key, value) -> {
+            configMap.put((String) key, (String) value);
+        });
+    }
+
     public static Object getByName(String name) {
-        return properties.getProperty(name);
+        return configMap.get(name);
+    }
+
+    public static String set(String key, String value) {
+        return configMap.putIfAbsent(key, value);
     }
 
     public static SerializerType getSerializerType() {
-        String value = properties.getProperty("serializer.algorithm");
+        String value = configMap.get("serializer.algorithm");
         if (value == null) {
             //默认配置为JSON方式
             return SerializerType.JSON;

@@ -1,6 +1,8 @@
 package com.l1nker4.lrpc.client;
 
 import com.l1nker4.lrpc.config.Config;
+import com.l1nker4.lrpc.config.DynamicConfigCenter;
+import com.l1nker4.lrpc.config.DynamicConfigCenterFactory;
 import com.l1nker4.lrpc.constants.Constants;
 import com.l1nker4.lrpc.entity.ProviderService;
 import com.l1nker4.lrpc.entity.RpcRequest;
@@ -19,10 +21,12 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Netty客户端实现
@@ -35,8 +39,13 @@ public class NettyClient implements RpcClient {
 
     private final ZookeeperServiceRegistry serviceRegistry;
 
+    private final DynamicConfigCenter dynamicConfigCenter;
+
     public NettyClient() {
-        String selectorStrategy = (String) Config.getByName(Config.SELECTOR_STRATEGY);
+        dynamicConfigCenter = DynamicConfigCenterFactory.getInstance();
+        dynamicConfigCenter.initAllConfig();
+
+        String selectorStrategy = (String) Config.getByName(Constants.SELECTOR_STRATEGY);
         this.serviceRegistry = new ZookeeperServiceRegistry((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS), selectorStrategy);
     }
 
@@ -51,6 +60,7 @@ public class NettyClient implements RpcClient {
             bootstrap.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 protected void initChannel(SocketChannel ch) {
+                    ch.pipeline().addLast(new IdleStateHandler(0, 4, 0, TimeUnit.SECONDS));
                     ch.pipeline().addLast(new ProtocolFrameDecoder());
                     ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
                     ch.pipeline().addLast(new ResponseMessageCodecSharable());
