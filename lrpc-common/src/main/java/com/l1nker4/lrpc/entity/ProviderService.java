@@ -1,8 +1,10 @@
 package com.l1nker4.lrpc.entity;
 
 import com.l1nker4.lrpc.constants.Constants;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -13,6 +15,8 @@ import java.io.Serializable;
  */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProviderService implements Serializable {
 
     private String serviceName;
