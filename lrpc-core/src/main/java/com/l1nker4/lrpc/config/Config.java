@@ -1,6 +1,7 @@
 package com.l1nker4.lrpc.config;
 
 import com.l1nker4.lrpc.enumeration.SerializerType;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author ：L1nker4
  * @date ： 创建于  2022/11/20 17:05
  */
+@Slf4j
 public abstract class Config {
 
     static Properties properties;
@@ -39,6 +41,7 @@ public abstract class Config {
     }
 
     public static String set(String key, String value) {
+        log.info("update config: {}, configValue: {}", key, value);
         return configMap.putIfAbsent(key, value);
     }
 

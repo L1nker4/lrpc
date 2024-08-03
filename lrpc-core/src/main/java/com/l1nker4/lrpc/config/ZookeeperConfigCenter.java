@@ -30,6 +30,7 @@ public class ZookeeperConfigCenter extends AbstractDynamicConfigCenter {
         List<String> configKeyList = zookeeperClient.getChildren(CONFIG_ROOT_PATH);
         if (CollectionUtils.isEmpty(configKeyList)) {
             log.info("ZookeeperConfigCenter configKeyList is empty");
+            return;
         }
         for (String configKey : configKeyList) {
             String configValue = new String(zookeeperClient.getData(CONFIG_ROOT_PATH + "/" + configKey),
