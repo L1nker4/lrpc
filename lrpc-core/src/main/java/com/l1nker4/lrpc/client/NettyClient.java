@@ -53,6 +53,9 @@ public class NettyClient implements RpcClient {
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.channel(NioSocketChannel.class);
             bootstrap.group(group);
+
+            CompletableFuture<RpcResponse> responseFuture = new CompletableFuture<>();
+
             bootstrap.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 protected void initChannel(SocketChannel ch) {
@@ -60,7 +63,7 @@ public class NettyClient implements RpcClient {
                     ch.pipeline().addLast(new ProtocolFrameDecoder());
                     ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
                     ch.pipeline().addLast(new ResponseMessageCodecSharable());
-                    ch.pipeline().addLast(new RpcClientResponseMessageHandler());
+                    ch.pipeline().addLast(new RpcClientResponseMessageHandler(responseFuture));
                 }
             });
 
@@ -77,10 +80,12 @@ public class NettyClient implements RpcClient {
                 throw new RuntimeException("illegal service address");
             }
 
+
             String[] splitStr = address.split(":");
             Channel channel = bootstrap.connect(splitStr[0], Integer.parseInt(splitStr[1])).sync().channel();
             log.info("rpc client request : {}", request);
-            channel.writeAndFlush(request).addListener((ChannelFutureListener) promise -> {
+            ChannelFuture channelFuture = channel.writeAndFlush(request);
+            channelFuture.addListener((ChannelFutureListener) promise -> {
                 if (!promise.isSuccess()) {
                     promise.channel().close();
                     log.error("发送消息时有错误发生: ", promise.cause());
@@ -88,12 +93,14 @@ public class NettyClient implements RpcClient {
                     log.info("发送消息成功");
                 }
             });
-            channel.closeFuture().sync();
+            channelFuture.awaitUninterruptibly();
+            // 等待响应
+            return responseFuture.get(5, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("client error", e);
         } finally {
-//            group.shutdownGracefully();
+            group.shutdownGracefully();
         }
-        return LrpcResponseHolder.get(request.getRequestId());
+        return null;
     }
 }

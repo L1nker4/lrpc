@@ -22,10 +22,14 @@ public class WeightedRandomLoadBalanceSelectorTest {
 
         // Run multiple times to ensure proper distribution
         ProviderService selected = selector.select(services);
-        assertTrue(service1.equals(selected) || service2.equals(selected) || 
-                   service3.equals(selected) || service4.equals(selected) ||
-                   service5.equals(selected) || service6.equals(selected));
-
+        assertTrue(service2.equals(selected));
+        assertTrue(service2.equals(selected));
+        assertTrue(service4.equals(selected));
+        assertTrue(service4.equals(selected));
+        assertTrue(service1.equals(selected));
+        assertTrue(service3.equals(selected));
+        assertTrue(service5.equals(selected));
+        assertTrue(service6.equals(selected));
         // Additional tests to validate distribution can be added here
     }
 }

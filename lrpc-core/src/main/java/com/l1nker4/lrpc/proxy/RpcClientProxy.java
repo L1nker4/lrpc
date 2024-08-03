@@ -1,6 +1,5 @@
 package com.l1nker4.lrpc.proxy;
 
-import com.l1nker4.lrpc.client.LrpcResponseHolder;
 import com.l1nker4.lrpc.client.NettyClient;
 import com.l1nker4.lrpc.client.RpcClient;
 import com.l1nker4.lrpc.constants.Constants;
@@ -38,7 +37,10 @@ public class RpcClientProxy implements InvocationHandler {
                 .paramTypes(method.getParameterTypes())
                 .build();
 
-        rpcClient.sendRequest(rpcRequest);
-        return LrpcResponseHolder.get(rpcRequest.getRequestId());
+        RpcResponse response = (RpcResponse) rpcClient.sendRequest(rpcRequest);
+        if (null != response) {
+            return response.getData();
+        }
+        return null;
     }
 }
