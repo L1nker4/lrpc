@@ -17,6 +17,8 @@ public class Constants {
 
     public static final String ZOOKEEPER_ADDRESS = "zookeeper.address";
 
+    public static final String SELECTOR_STRATEGY = "selector.strategy";
+
     public static final String ROOT_PATH = "/lrpc";
 
     public static final String SLASH = "/";

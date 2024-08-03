@@ -1,6 +1,7 @@
 package com.l1nker4.lrpc.registry.zookeeper;
 
 import com.l1nker4.lrpc.config.Config;
+import com.l1nker4.lrpc.constants.Constants;
 
 /**
  * @author ：L1nker4
@@ -14,7 +15,7 @@ public class ZookeeperServiceRegistryFactory {
     private ZookeeperServiceRegistryFactory() {}
 
     public static ZookeeperServiceRegistry getZookeeperServiceRegistry(String address) {
-        String selectorStrategy = (String) Config.getByName(Config.SELECTOR_STRATEGY);
+        String selectorStrategy = (String) Config.getByName(Constants.SELECTOR_STRATEGY);
         if (serviceRegistry == null) {
             synchronized (ZookeeperServiceRegistry.class) {
                 if (serviceRegistry == null) {
