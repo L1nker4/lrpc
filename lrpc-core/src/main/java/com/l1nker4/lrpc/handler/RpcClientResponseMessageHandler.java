@@ -1,6 +1,5 @@
 package com.l1nker4.lrpc.handler;
 
-import com.l1nker4.lrpc.client.LrpcResponseHolder;
 import com.l1nker4.lrpc.entity.RpcResponse;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;

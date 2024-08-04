@@ -1,8 +1,6 @@
 package com.l1nker4.lrpc.registry;
 
-import org.apache.curator.framework.api.CuratorListener;
 import org.apache.curator.framework.api.CuratorWatcher;
-import org.apache.curator.framework.recipes.cache.CuratorCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.zookeeper.CreateMode;

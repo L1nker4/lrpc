@@ -3,8 +3,6 @@ package com.l1nker4.lrpc.registry.nacos;
 import com.l1nker4.lrpc.entity.ProviderService;
 import com.l1nker4.lrpc.registry.AbstractServiceRegistry;
 
-import java.net.InetSocketAddress;
-
 /**
  * @author ：L1nker4
  * @description:

@@ -5,9 +5,9 @@ import com.l1nker4.lrpc.entity.ProviderService;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.List;
 
 public class ConsistentHashingLoadBalanceSelector implements LoadBalanceSelector {
 
