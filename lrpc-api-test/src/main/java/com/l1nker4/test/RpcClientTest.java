@@ -1,16 +1,11 @@
 package com.l1nker4.test;
 
 import com.l1nker4.entity.HelloRequestEntity;
-import com.l1nker4.lrpc.client.NettyClient;
-import com.l1nker4.lrpc.entity.RpcRequest;
-import com.l1nker4.lrpc.entity.RpcResponse;
-import com.l1nker4.lrpc.protocol.SequenceIdGenerator;
 import com.l1nker4.lrpc.proxy.RpcClientProxy;
 import com.l1nker4.service.HelloService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * @author ：L1nker4

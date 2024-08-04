@@ -1,12 +1,11 @@
 package com.l1nker4.lrpc.handler;
 
+import com.l1nker4.lrpc.client.LrpcResponseHolder;
 import com.l1nker4.lrpc.entity.RpcResponse;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.concurrent.CompletableFuture;
 
 /**
  * RPC响应Handler
@@ -17,15 +16,14 @@ import java.util.concurrent.CompletableFuture;
 @ChannelHandler.Sharable
 public class RpcClientResponseMessageHandler extends SimpleChannelInboundHandler<RpcResponse> {
 
-    private final CompletableFuture<RpcResponse> responseFuture;
+//    private final CompletableFuture<RpcResponse> responseFuture;
 
-    public RpcClientResponseMessageHandler(CompletableFuture<RpcResponse> responseFuture) {
-        this.responseFuture = responseFuture;
+    public RpcClientResponseMessageHandler() {
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcResponse rpcResponse) {
-        responseFuture.complete(rpcResponse);
+        LrpcResponseHolder.put(rpcResponse.getRequestId(), rpcResponse);
         log.info("rpc response: {}", rpcResponse);
     }
 }

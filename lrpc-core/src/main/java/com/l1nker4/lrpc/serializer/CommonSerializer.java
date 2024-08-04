@@ -42,4 +42,17 @@ public interface CommonSerializer {
                 return new JsonSerializer();
         }
     }
+
+    static Class<? extends CommonSerializer> getClassByType(SerializerType type){
+        switch (type){
+            case PROTOBUF:
+                return ProtobufSerializer.class;
+            case HESSIAN:
+                return HessianSerializer.class;
+            case KRYO:
+                return KryoSerializer.class;
+            default:
+                return JsonSerializer.class;
+        }
+    }
 }
