@@ -143,7 +143,6 @@ public class NettyChannelPoolFactory {
         if (null != channel || !channel.isActive() || !channel.isOpen() || !channel.isWritable()) {
             channel.deregister().syncUninterruptibly().awaitUninterruptibly();
             channel.closeFuture().syncUninterruptibly().awaitUninterruptibly();
-
         }
         getBlockingQueue(address, serializerType).offer(channel);
     }

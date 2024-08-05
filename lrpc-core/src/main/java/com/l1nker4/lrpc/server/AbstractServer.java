@@ -7,56 +7,59 @@ import com.l1nker4.lrpc.config.DynamicConfigCenter;
 import com.l1nker4.lrpc.config.DynamicConfigCenterFactory;
 import com.l1nker4.lrpc.constants.Constants;
 import com.l1nker4.lrpc.entity.ProviderService;
-import com.l1nker4.lrpc.handler.RpcServerRequestMessageHandler;
-import com.l1nker4.lrpc.protocol.ProtocolFrameDecoder;
-import com.l1nker4.lrpc.protocol.RequestMessageCodecSharable;
 import com.l1nker4.lrpc.provider.ServiceProvider;
 import com.l1nker4.lrpc.provider.ServiceProviderFactory;
 import com.l1nker4.lrpc.registry.zookeeper.ZookeeperServiceRegistry;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.timeout.IdleStateHandler;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
 
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
- * RPC Server
- *
- * @author l1nker4
+ * @Author wanglin
+ * @Description
+ * @Date 2024-08-05 18:36
  */
 @Slf4j
-public class RpcServer {
+@Getter
+public abstract class AbstractServer implements IServer {
 
-    private final String host;
-
-    private final int port;
-
+    protected String host;
+    protected int port;
     private final ServiceProvider serviceProvider;
-
-    private final ZookeeperServiceRegistry zookeeperServiceRegistry;
-
     private final DynamicConfigCenter configCenter;
 
-    public RpcServer(String host, int port) {
+    //TODO multi registry
+    private final ZookeeperServiceRegistry zookeeperServiceRegistry;
+
+    public AbstractServer(String host, int port) {
         this.host = host;
         this.port = port;
         this.serviceProvider = ServiceProviderFactory.getProvider();
         this.configCenter = DynamicConfigCenterFactory.getInstance();
+        this.zookeeperServiceRegistry = new ZookeeperServiceRegistry((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS)
+                , (String) Config.getByName(Constants.SELECTOR_STRATEGY));
+    }
+
+    @Override
+    public void init() {
         configCenter.initAllConfig();
-        String selectorStrategy = (String) Config.getByName(Constants.SELECTOR_STRATEGY);
-        this.zookeeperServiceRegistry = new ZookeeperServiceRegistry((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS), selectorStrategy);
         scanService();
+        doInit();
+    }
+
+    @Override
+    public void start() {
+        //TODO optimize this invoke
+        init();
+        doStart(host, port);
+    }
+
+    @Override
+    public void destroy() {
+        doDestroy();
     }
 
     private void scanService() {
@@ -113,37 +116,9 @@ public class RpcServer {
         zookeeperServiceRegistry.registerService(providerService);
     }
 
-    /**
-     * 启动RPC Server的方法
-     */
-    public void start() {
-        NioEventLoopGroup boss = new NioEventLoopGroup();
-        NioEventLoopGroup worker = new NioEventLoopGroup();
-        try {
-            ServerBootstrap serverBootstrap = new ServerBootstrap();
-            serverBootstrap.channel(NioServerSocketChannel.class);
-            serverBootstrap.group(boss, worker);
+    public abstract void doInit();
 
-            //// keeplive and deny nagle
-            serverBootstrap.option(ChannelOption.SO_KEEPALIVE, true)
-                    .option(ChannelOption.TCP_NODELAY, true);
-            serverBootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                protected void initChannel(SocketChannel ch) {
-                    ch.pipeline().addLast(new IdleStateHandler(0, 4, 0, TimeUnit.SECONDS));
-                    ch.pipeline().addLast(new ProtocolFrameDecoder());
-                    ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
-                    ch.pipeline().addLast(new RequestMessageCodecSharable());
-                    ch.pipeline().addLast(new RpcServerRequestMessageHandler());
-                }
-            });
-            Channel channel = serverBootstrap.bind(port).sync().channel();
-            channel.closeFuture().sync();
-        } catch (InterruptedException e) {
-            log.error("server error", e);
-        } finally {
-            boss.shutdownGracefully();
-            worker.shutdownGracefully();
-        }
-    }
+    public abstract void doStart(String host, int port);
+
+    public abstract void doDestroy();
 }

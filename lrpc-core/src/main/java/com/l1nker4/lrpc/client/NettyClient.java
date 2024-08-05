@@ -49,6 +49,9 @@ public class NettyClient implements RpcClient {
                 + Constants.SLASH + request.getVersion();
 
         ProviderService providerService = serviceRegistry.getService(servicePath);
+        if (null == providerService) {
+            throw new RuntimeException("no service found : " + servicePath);
+        }
         String address = providerService.getAddress();
         if (StringUtils.isBlank(address)) {
             throw new RuntimeException("illegal service address");
