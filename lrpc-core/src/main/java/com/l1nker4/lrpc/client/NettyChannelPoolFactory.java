@@ -103,9 +103,8 @@ public class NettyChannelPoolFactory {
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) {
-                            ch.pipeline().addLast(new IdleStateHandler(0, 4, 0, TimeUnit.SECONDS));
                             ch.pipeline().addLast(new ProtocolFrameDecoder());
-                            ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
+//                            ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
                             ch.pipeline().addLast(new ResponseMessageCodecSharable());
                             ch.pipeline().addLast(new RpcClientResponseMessageHandler());
                         }
@@ -140,7 +139,7 @@ public class NettyChannelPoolFactory {
     }
 
     public void releaseChannel(String address, Class<? extends CommonSerializer> serializerType, Channel channel) {
-        if (null != channel || !channel.isActive() || !channel.isOpen() || !channel.isWritable()) {
+        if (!channel.isActive() || !channel.isOpen() || !channel.isWritable()) {
             channel.deregister().syncUninterruptibly().awaitUninterruptibly();
             channel.closeFuture().syncUninterruptibly().awaitUninterruptibly();
         }

@@ -9,10 +9,14 @@ import com.l1nker4.lrpc.entity.RpcRequest;
 import com.l1nker4.lrpc.entity.RpcResponse;
 import com.l1nker4.lrpc.registry.zookeeper.ZookeeperServiceRegistry;
 import com.l1nker4.lrpc.serializer.CommonSerializer;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
+import com.l1nker4.lrpc.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Netty客户端实现
@@ -27,20 +31,22 @@ public class NettyClient implements RpcClient {
 
     private final DynamicConfigCenter dynamicConfigCenter;
 
-    private final NettyChannelPoolFactory nettyChannelPoolFactory;
+    private final ExecutorService fixedThreadPool;
+
+    protected long timeoutMillis = 5000;
 
     private final Class<? extends CommonSerializer> serializerClass = CommonSerializer.getClassByType(Config.getSerializerType());
 
     public NettyClient() {
         dynamicConfigCenter = DynamicConfigCenterFactory.getInstance();
         dynamicConfigCenter.initAllConfig();
-        nettyChannelPoolFactory = NettyChannelPoolFactory.getInstance();
         String selectorStrategy = (String) Config.getByName(Constants.SELECTOR_STRATEGY);
         this.serviceRegistry = new ZookeeperServiceRegistry((String) Config.getByName(Constants.ZOOKEEPER_ADDRESS), selectorStrategy);
+        this.fixedThreadPool = Executors.newFixedThreadPool(CommonUtils.getThreadConfigNumberOfIO());
     }
 
     @Override
-    public RpcResponse<?> sendRequest(RpcRequest request) {
+    public RpcResponse<?> sendRequest(RpcRequest request) throws Exception {
         String servicePath = Constants.ROOT_PATH
                 + Constants.SLASH
                 + request.getGroupName()
@@ -56,19 +62,14 @@ public class NettyClient implements RpcClient {
         if (StringUtils.isBlank(address)) {
             throw new RuntimeException("illegal service address");
         }
-        Channel channel = null;
-        try {
-            channel = nettyChannelPoolFactory.getChannel(address, serializerClass, 5000);
-            ChannelFuture channelFuture = channel.writeAndFlush(request);
-            channelFuture.syncUninterruptibly();
-            return LrpcResponseHolder.get(request.getRequestId());
-        }catch (Exception e){
-            log.error("send request error", e);
-        }finally {
-            if (null != channel) {
-                nettyChannelPoolFactory.releaseChannel(address, serializerClass, channel);
-            }
-        }
-        return null;
+        Future<RpcResponse<?>> future = fixedThreadPool
+                .submit(LrpcResponseCallback
+                        .builder()
+                        .address(address)
+                        .timeoutMillis(timeoutMillis)
+                        .nettyChannelPoolFactory(NettyChannelPoolFactory.getInstance())
+                        .request(request)
+                        .build());
+        return future.get(timeoutMillis, TimeUnit.MILLISECONDS);
     }
 }

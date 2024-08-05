@@ -9,5 +9,5 @@ import com.l1nker4.lrpc.entity.RpcRequest;
  */
 public interface RpcClient {
 
-    Object sendRequest(RpcRequest request);
+    Object sendRequest(RpcRequest request) throws Exception;
 }
